@@ -76,7 +76,7 @@ def compute_scores_per_fold(data, data_indices, threshold):
     return f1, kappa, number_of_images
 
 
-def compute_cross_validation_scores(data, data_indices, threshold):
+def compute_cross_validation_scores(data, data_indices, threshold, test=False):
     f1_score_cum = 0
     kappa_score_cum = 0
     number_of_images_cum = 0
@@ -87,9 +87,14 @@ def compute_cross_validation_scores(data, data_indices, threshold):
             i for i in range(len(data)) if i not in test_data_indices_subset
         ]
 
-        f1, kappa, number_of_images = compute_scores_per_fold(
-            data, train_data_indices_subset, threshold
-        )
+        if test:
+            f1, kappa, number_of_images = compute_scores_per_fold(
+                data, test_data_indices_subset, threshold
+            )
+        else:
+            f1, kappa, number_of_images = compute_scores_per_fold(
+                data, train_data_indices_subset, threshold
+            )
         f1_score_cum += f1
         kappa_score_cum += kappa
         number_of_images_cum += number_of_images
