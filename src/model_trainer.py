@@ -82,9 +82,13 @@ def compute_cross_validation_scores(data, data_indices, threshold):
     number_of_images_cum = 0
 
     # compute metrics for each fold
-    for data_indices_subset in data_indices:
+    for test_data_indices_subset in data_indices:
+        train_data_indices_subset = [
+            i for i in range(len(data)) if i not in test_data_indices_subset
+        ]
+
         f1, kappa, number_of_images = compute_scores_per_fold(
-            data, data_indices_subset, threshold
+            data, train_data_indices_subset, threshold
         )
         f1_score_cum += f1
         kappa_score_cum += kappa
