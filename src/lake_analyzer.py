@@ -16,7 +16,7 @@ SPATIAL_RESOLUTION = 30
 def estimate_area_by_month(datections, lake_name, all_dates):
     dates = [date[-10:] for date in all_dates if lake_name in date]
     indices = [index for index, date in enumerate(all_dates) if lake_name in date]
-    lake_detections = np.array(datections)[indices]
+    lake_detections = np.array(datections, dtype=object)[indices]
 
     # create a data frame that stores the lake area in square kilometers for every month
     areas = []
@@ -120,7 +120,7 @@ def prepare_visualization(
     data, all_dates, lake_name, filled_isolated_detections, largest_area_mask_overall
 ):
     indices = [index for index, date in enumerate(all_dates) if lake_name in date]
-    lake_data = np.array(list(data.values()))[indices]
+    lake_data = np.array(list(data.values()), dtype=object)[indices]
 
     # prepare detections and terrain images to be plotted
     terrain_images = []
@@ -203,9 +203,9 @@ def analyze_lake(lake_name, data, detections):
     indices = [
         index for index, date in enumerate(list(data.keys())) if lake_name in date
     ]
-    lake_detections = np.array(detections)[indices]
-    ground_truths = [bands[1] for bands in np.array(list(data.values()))[indices]]
-    water_indices = [bands[0] for bands in np.array(list(data.values()))[indices]]
+    lake_detections = np.array(detections, dtype=object)[indices]
+    ground_truths = [bands[1] for bands in np.array(list(data.values()), dtype=object)[indices]]
+    water_indices = [bands[0] for bands in np.array(list(data.values()), dtype=object)[indices]]
 
     # get region of interest
     largest_area_mask_overall, _, dilated_detections = get_largest_lake_mask(

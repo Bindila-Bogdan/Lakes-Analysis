@@ -1,13 +1,9 @@
 import os
 import rasterio
+from tqdm import tqdm
 
 
 DATA_PATH = "./data/{lake_name}/"
-BLUE_BAND = 1
-GREEN_BAND = 2
-RED_BAND = 3
-WATER_INDEX_BAND = 20
-GROUND_TRUTH_BAND = 21
 
 
 def load_lakes(lake_names):
@@ -15,7 +11,7 @@ def load_lakes(lake_names):
     names_dates = []
     bands = []
 
-    for lake_name in lake_names:
+    for lake_name in tqdm(lake_names):
         # read data for current lake
         dates = [date for date in os.listdir(DATA_PATH.format(lake_name=lake_name))]
         maps = [
@@ -26,19 +22,27 @@ def load_lakes(lake_names):
         names_dates_current_lake = [lake_name + "_" + date[:-4] for date in dates]
 
         # select bands of interest
-        bands_current_lake = [
-            [
-                map.read(band_index)
-                for band_index in [
-                    WATER_INDEX_BAND,
-                    GROUND_TRUTH_BAND,
-                    RED_BAND,
-                    GREEN_BAND,
-                    BLUE_BAND,
-                ]
-            ]
-            for map in maps
-        ]
+        bands_current_lake = []
+
+        for current_map in maps:
+            number_of_bands = current_map.count
+
+            if number_of_bands == 8:
+                bands_current_lake.append(
+                    [
+                        current_map.read(band_index)
+                        for band_index in [7, 8, 1, 2, 3, 4, 5, 6]
+                    ]
+                )
+            elif number_of_bands == 9:
+                bands_current_lake.append(
+                    [
+                        current_map.read(band_index)
+                        for band_index in [8, 9, 2, 3, 4, 5, 6, 7]
+                    ]
+                )
+            else:
+                raise ValueError(f"Unrecognized number of bands: {number_of_bands}")
 
         # store the data for the current lake
         names_dates.extend(names_dates_current_lake)
