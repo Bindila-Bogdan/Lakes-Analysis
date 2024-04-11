@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import seaborn as sns
 import plotly.express as px
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
@@ -8,15 +9,16 @@ from ipywidgets import interact, widgets, fixed
 from .lake_post_processor import *
 
 FIRST_DATE = "1984-03"
-LAST_DATE = "2012-04"
+LAST_DATE = "2021-12"
 DILATION_SIZE = 3
 SPATIAL_RESOLUTION = 30
+sns.set()
 
 
 def estimate_area_by_month(datections, lake_name, all_dates):
     dates = [date[-10:] for date in all_dates if lake_name in date]
     indices = [index for index, date in enumerate(all_dates) if lake_name in date]
-    lake_detections = np.array(datections, dtype=object)[indices]
+    lake_detections = np.array(datections)[indices]
 
     # create a data frame that stores the lake area in square kilometers for every month
     areas = []
@@ -105,7 +107,7 @@ def display_detection(
     ]
 
     for i, _ in enumerate(images):
-        ax[i].imshow(images[i], cmap="grey")
+        ax[i].imshow(images[i], cmap="Greys")
         ax[i].set_title(titles[i])
         ax[i].axis("off")
         ax[i]
@@ -120,7 +122,7 @@ def prepare_visualization(
     data, all_dates, lake_name, filled_isolated_detections, largest_area_mask_overall
 ):
     indices = [index for index, date in enumerate(all_dates) if lake_name in date]
-    lake_data = np.array(list(data.values()), dtype=object)[indices]
+    lake_data = np.array(list(data.values()))[indices]
 
     # prepare detections and terrain images to be plotted
     terrain_images = []
@@ -153,7 +155,7 @@ def prepare_visualization(
         )
 
         # create the terrain image by adding the RGB bands
-        terrain_image = np.dstack((lake_data[i][2], lake_data[i][3], lake_data[i][4]))
+        terrain_image = np.dstack((lake_data[i][4], lake_data[i][3], lake_data[i][2]))
 
         # scale the bands to have values between 0 and 1
         for channel_index in range(3):
@@ -203,9 +205,9 @@ def analyze_lake(lake_name, data, detections):
     indices = [
         index for index, date in enumerate(list(data.keys())) if lake_name in date
     ]
-    lake_detections = np.array(detections, dtype=object)[indices]
-    ground_truths = [bands[1] for bands in np.array(list(data.values()), dtype=object)[indices]]
-    water_indices = [bands[0] for bands in np.array(list(data.values()), dtype=object)[indices]]
+    lake_detections = np.array(detections)[indices]
+    ground_truths = [bands[1] for bands in np.array(list(data.values()))[indices]]
+    water_indices = [bands[0] for bands in np.array(list(data.values()))[indices]]
 
     # get region of interest
     largest_area_mask_overall, _, dilated_detections = get_largest_lake_mask(
@@ -252,3 +254,34 @@ def analyze_lake(lake_name, data, detections):
         terrain_images=fixed(terrain_images),
         explained_detections=fixed(explained_detections),
     )
+
+
+def plot_feature_importance(trained_rf_classifier):
+    # get and sort feature importances
+    importances = trained_rf_classifier.feature_importances_
+    feature_names = [
+        "water index",
+        "blue band",
+        "green band",
+        "red band",
+        "near infrared band",
+        "shortwave infrared 1 band",
+        "shortwave infrared 2 band",
+    ]
+    feature_importance = {
+        k: v
+        for k, v in sorted(
+            dict(zip(feature_names, importances)).items(),
+            reverse=True,
+            key=lambda x: x[1],
+        )
+    }
+
+    # plot a bar plot with feature importances given by the Random Forest
+    sns.barplot(
+        y=feature_importance.keys(), x=feature_importance.values(), color="turquoise"
+    )
+    plt.ylabel("feature")
+    plt.xlabel("importance")
+    plt.title("Random Forest feature importance")
+    plt.show()

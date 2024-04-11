@@ -160,3 +160,4 @@ cython_debug/
 #.idea/
 
 *.tif
+notebooks/compute_lake_area.ipynb

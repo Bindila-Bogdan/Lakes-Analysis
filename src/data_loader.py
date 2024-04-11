@@ -13,7 +13,7 @@ def load_lakes(lake_names):
 
     for lake_name in tqdm(lake_names):
         # read data for current lake
-        dates = [date for date in os.listdir(DATA_PATH.format(lake_name=lake_name))]
+        dates = [date for date in os.listdir(DATA_PATH.format(lake_name=lake_name)) if date[-4:] == ".tif"]
         maps = [
             rasterio.open(DATA_PATH.format(lake_name=lake_name) + date)
             for date in dates

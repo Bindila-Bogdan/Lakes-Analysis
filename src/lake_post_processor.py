@@ -20,10 +20,14 @@ def get_largest_lake_mask(lake_detections):
         largest_area_mask = None
 
         # dilate the image and store it
-        diltated_img = binary_dilation(
-            lake_detections[i],
-            structure=np.ones((DILATION_SIZE, DILATION_SIZE), np.bool_),
-        )
+        try:
+            diltated_img = binary_dilation(
+                lake_detections[i],
+                structure=np.ones((DILATION_SIZE, DILATION_SIZE), np.bool_),
+            )
+        except RuntimeError:
+            diltated_img = lake_detections[i]
+
         diltated_img_cast = diltated_img.astype(np.uint8) * 255
         dilated_detections.append(diltated_img)
 
